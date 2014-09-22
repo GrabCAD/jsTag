@@ -90,7 +90,6 @@ jsTag.factory('JSTagsCollection', ['JSTag', '$filter', function(JSTag, $filter) 
     if(value.length) {
       var tagIndex = this.tagsCounter;
       this.tagsCounter++;
-
       var newTag = new JSTag(value, tagIndex);
       this.tags[tagIndex] = newTag;
     }
@@ -495,8 +494,7 @@ jsTag.controller('JSTagMainCtrl', ['$attrs', '$scope', 'InputService', 'TagsInpu
   $scope.inputService = new InputService($scope.options);
 
   // Export tagsCollection separately since it's used alot
-  var tagsCollection = $scope.tagsInputService.tagsCollection;
-  $scope.tagsCollection = tagsCollection;
+  $scope.tagsCollection = $scope.options.tags || $scope.tagsInputService.tagsCollection;
 
   // TODO: Should be inside inside tagsCollection.js
   // On every change to editedTags keep isThereAnEditedTag posted
