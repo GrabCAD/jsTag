@@ -379,22 +379,22 @@ jsTag.factory('TagsInputService', ['JSTag', 'JSTagsCollection', function(JSTag, 
 
   // *** Methods *** //
 
-  TagsHandler.prototype.tagClicked = function(tag) {
-    this.tagsCollection.setActiveTag(tag);
+  TagsHandler.prototype.tagClicked = function(tagsCollection, tag) {
+    tagsCollection.setActiveTag(tag);
   };
 
-  TagsHandler.prototype.tagDblClicked = function(tag) {
+  TagsHandler.prototype.tagDblClicked = function(tagsCollection, tag) {
     var editAllowed = this.options.edit;
     if (editAllowed) {
       // Set tag as edit
-      this.tagsCollection.setEditedTag(tag);
+      tagsCollection.setEditedTag(tag);
     }
   };
 
   // Keydown was pressed while a tag was active.
   // Important Note: The target of the event is actually a fake input used to capture the keydown.
-  TagsHandler.prototype.onActiveTagKeydown = function(inputService, options) {
-    var activeTag = this.tagsCollection.getActiveTag();
+  TagsHandler.prototype.onActiveTagKeydown = function(tagsCollection, inputService, options) {
+    var activeTag = tagsCollection.getActiveTag();
 
     // Do nothing in unexpected situations
     if (activeTag !== null) {
@@ -405,7 +405,7 @@ jsTag.factory('TagsInputService', ['JSTag', 'JSTagsCollection', function(JSTag, 
       var blurActiveTag = function() {
         // Expose the option not to blur the active tag
         if (this.shouldBlurActiveTag) {
-          this.onActiveTagBlur(options);
+          this.onActiveTagBlur(tagsCollection, options);
         }
       };
 
@@ -414,27 +414,27 @@ jsTag.factory('TagsInputService', ['JSTag', 'JSTagsCollection', function(JSTag, 
           var editAllowed = this.options.edit;
           if (editAllowed) {
             blurActiveTag.apply(this);
-            this.tagsCollection.setEditedTag(activeTag);
+            tagsCollection.setEditedTag(activeTag);
           }
 
           break;
         case 8: // Backspace
-          this.tagsCollection.removeTag(activeTag.id);
+          tagsCollection.removeTag(activeTag.id);
           inputService.isWaitingForInput = true;
 
           break;
         case 37: // Left arrow
           blurActiveTag.apply(this);
-          var previousTag = this.tagsCollection.getPreviousTag(activeTag);
-          this.tagsCollection.setActiveTag(previousTag);
+          var previousTag = tagsCollection.getPreviousTag(activeTag);
+          tagsCollection.setActiveTag(previousTag);
 
           break;
         case 39: // Right arrow
           blurActiveTag.apply(this);
 
-          var nextTag = this.tagsCollection.getNextTag(activeTag);
+          var nextTag = tagsCollection.getNextTag(activeTag);
           if (nextTag !== activeTag) {
-            this.tagsCollection.setActiveTag(nextTag);
+            tagsCollection.setActiveTag(nextTag);
           } else {
             inputService.isWaitingForInput = true;
           }
@@ -449,12 +449,12 @@ jsTag.factory('TagsInputService', ['JSTag', 'JSTagsCollection', function(JSTag, 
   // this is called also when clicking the active tag.
   // (Which is good because we want the tag to be unactive, then it will be reactivated on the click event)
   // It is also called when entering edit mode (ex. when pressing enter while active, it will call blur)
-  TagsHandler.prototype.onActiveTagBlur = function(options) {
-    var activeTag = this.tagsCollection.getActiveTag();
+  TagsHandler.prototype.onActiveTagBlur = function(tagsCollection, options) {
+    var activeTag = tagsCollection.getActiveTag();
 
     // Do nothing in unexpected situations
     if (activeTag !== null) {
-      this.tagsCollection.unsetActiveTag(activeTag);
+      tagsCollection.unsetActiveTag(activeTag);
     }
   }
 
@@ -662,8 +662,8 @@ angular.module("jsTag").run(["$templateCache", function($templateCache) {
     "      class=\"jt-tag active-{{tagsCollection.isTagActive(this.tag)}}\">\n" +
     "      <span\n" +
     "        class=\"value\"\n" +
-    "        ng-click=\"tagsInputService.tagClicked(this.tag)\"\n" +
-    "        ng-dblclick=\"tagsInputService.tagDblClicked(this.tag)\">\n" +
+    "        ng-click=\"tagsInputService.tagClicked(tagsCollection, this.tag)\"\n" +
+    "        ng-dblclick=\"tagsInputService.tagDblClicked(tagsCollection, this.tag)\">\n" +
     "        {{tag.value}}\n" +
     "      </span>\n" +
     "      <span class=\"remove-button\" ng-click=\"tagsCollection.removeTag(this.tag.id)\">{{options.texts.removeSymbol}}</span>\n" +
@@ -697,8 +697,8 @@ angular.module("jsTag").run(["$templateCache", function($templateCache) {
     "  <input\n" +
     "    class=\"jt-fake-input\"\n" +
     "    focus-me=\"isThereAnActiveTag\"\n" +
-    "    ng-keydown=\"tagsInputService.onActiveTagKeydown(inputService, {$event: $event})\"\n" +
-    "    ng-blur=\"tagsInputService.onActiveTagBlur()\" />\n" +
+    "    ng-keydown=\"tagsInputService.onActiveTagKeydown(tagsCollection, inputService, {$event: $event})\"\n" +
+    "    ng-blur=\"tagsInputService.onActiveTagBlur(tagsCollection)\" />\n" +
     "</div>"
   );
 
@@ -714,8 +714,8 @@ angular.module("jsTag").run(["$templateCache", function($templateCache) {
     "      class=\"jt-tag active-{{tagsCollection.isTagActive(this.tag)}}\">\n" +
     "      <span\n" +
     "        class=\"value\"\n" +
-    "        ng-click=\"tagsInputService.tagClicked(this.tag)\"\n" +
-    "        ng-dblclick=\"tagsInputService.tagDblClicked(this.tag)\">\n" +
+    "        ng-click=\"tagsInputService.tagClicked(tagsCollection, this.tag)\"\n" +
+    "        ng-dblclick=\"tagsInputService.tagDblClicked(tagsCollection, this.tag)\">\n" +
     "        {{tag.value}}\n" +
     "      </span>\n" +
     "      <span class=\"remove-button\" ng-click=\"tagsCollection.removeTag(this.tag.id)\">{{options.texts.removeSymbol}}</span>\n" +
@@ -754,8 +754,8 @@ angular.module("jsTag").run(["$templateCache", function($templateCache) {
     "  <input\n" +
     "    class=\"jt-fake-input\"\n" +
     "    focus-me=\"isThereAnActiveTag\"\n" +
-    "    ng-keydown=\"tagsInputService.onActiveTagKeydown(inputService, {$event: $event})\"\n" +
-    "    ng-blur=\"tagsInputService.onActiveTagBlur()\" />\n" +
+    "    ng-keydown=\"tagsInputService.onActiveTagKeydown(tagsCollection, inputService, {$event: $event})\"\n" +
+    "    ng-blur=\"tagsInputService.onActiveTagBlur(tagsCollection)\" />\n" +
     "</div>"
   );
 
